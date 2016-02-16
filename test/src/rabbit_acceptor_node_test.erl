@@ -20,8 +20,13 @@
 
 -include_lib("eunit/include/eunit.hrl").
 -include_lib("amqp_client/include/amqp_client.hrl").
+-include_lib("rabbit_acceptor_node.hrl").
 
 -import(rabbit_basic, [header/2, prepend_table_header/3]).
+
+-define(IRRELEVANT_HEADER, <<"x-irrelevant-header">>).
+-define(IRRELEVANT_KEY, <<"irrelevant-key">>).
+-define(IRRELEVANT_VAL, <<"irrelevant-value">>).
 
 test() ->
     ok = eunit:test(tests(?MODULE, 60), [verbose]).
@@ -46,7 +51,7 @@ acceptor_node_test() ->
 
     [begin
        ?assertNotEqual(get_headers(Msg), undefined),
-       ?assertEqual(first_header_name(Msg), <<"x-accepted-by">>),
+       ?assertEqual(first_header_name(Msg), ?ACCEPTOR_NODE_HEADER),
        ?assertEqual(accepted_by(Msg), node())
      end|| Msg <- Result],
 
@@ -76,7 +81,7 @@ existing_acceptor_node_test() ->
 
     [begin
        ?assertNotEqual(get_headers(Msg), undefined),
-       ?assertEqual(first_header_name(Msg), <<"x-accepted-by">>),
+       ?assertEqual(first_header_name(Msg), ?ACCEPTOR_NODE_HEADER),
        ?assertEqual(accepted_by(Msg), seti@home)
      end|| Msg <- Result],
 
@@ -106,8 +111,8 @@ acceptor_node_irrelevant_header_test() ->
 
     [begin
        ?assertNotEqual(get_headers(Msg), undefined),
-       ?assertEqual(first_header_name(Msg), <<"x-accepted-by">>),
-       ?assertEqual(last_header_name(Msg), <<"x-random-header">>),
+       ?assertEqual(first_header_name(Msg), ?ACCEPTOR_NODE_HEADER),
+       ?assertEqual(last_header_name(Msg), ?IRRELEVANT_HEADER),
        ?assertEqual(accepted_by(Msg), node())
      end|| Msg <- Result],
 
@@ -212,17 +217,19 @@ last_header_name(#amqp_msg{props = #'P_basic'{headers = Headers}}) ->
 
 %TODO: Find a representation, based on the semantics of the AMQP header.
 accepted_by(#amqp_msg{props = #'P_basic'{headers = Headers}}) ->
-  list_to_atom(binary_to_list(element(3,hd(element(2,hd(element(3, header(<<"x-accepted-by">>, Headers)))))))).
+  list_to_atom(binary_to_list(element(3,hd(element(2,hd(element(3, header(?ACCEPTOR_NODE_HEADER, Headers)))))))).
 
 
 make_msg(V) -> #amqp_msg{payload = term_to_binary(V)}.
 
 make_accepted_msg({V,N}) ->
-    make_msg_with_header(V,<<"x-accepted-by">>, <<"accepting-node">>,
-        list_to_binary(atom_to_list(N))).
+    make_msg_with_header(V,
+                         ?ACCEPTOR_NODE_HEADER,
+                         ?ACCEPTOR_NODE_KEY, 
+                         list_to_binary(atom_to_list(N))).
 
 make_msg_with_irrelevant_header(V) ->
-    make_msg_with_header(V,<<"x-random-header">>, <<"random-attr">>, <<"random-key">>).
+    make_msg_with_header(V, ?IRRELEVANT_HEADER, ?IRRELEVANT_KEY, ?IRRELEVANT_VAL).
 
 
 make_msg_with_header(V,Name,Key,Value) ->

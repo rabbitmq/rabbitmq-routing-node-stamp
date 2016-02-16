@@ -18,6 +18,7 @@
 
 -include_lib("rabbit_common/include/rabbit.hrl").
 -include_lib("rabbit_common/include/rabbit_framing.hrl").
+-include_lib("rabbit_acceptor_node.hrl").
 
 -import(rabbit_basic, [extract_headers/1, header/2, prepend_table_header/3]).
 
@@ -60,7 +61,7 @@ set_acceptor_node(#content{properties = #'P_basic'{headers = undefined}} = Conte
   set_acceptor_node(Content, node());
 
 set_acceptor_node(#content{properties = #'P_basic'{headers = Headers}} = Content) ->
-  case header(<<"x-accepted-by">>, Headers) of
+  case header(?ACCEPTOR_NODE_HEADER, Headers) of
     undefined -> set_acceptor_node(Content, node());
     _ -> Content  % Do not overwrite an existing acceptor node.
   end.
@@ -68,8 +69,8 @@ set_acceptor_node(#content{properties = #'P_basic'{headers = Headers}} = Content
 set_acceptor_node(#content{properties = #'P_basic'{headers = Headers} = Props} = Content, Node) ->
   NewHeaders =
   prepend_table_header(
-    <<"x-accepted-by">>,
-    [{<<"accepting-node">>, longstr, list_to_binary(atom_to_list(Node))}],
+    ?ACCEPTOR_NODE_HEADER,
+    [{?ACCEPTOR_NODE_KEY, longstr, list_to_binary(atom_to_list(Node))}],
     Headers
    ),
   Content#content{
