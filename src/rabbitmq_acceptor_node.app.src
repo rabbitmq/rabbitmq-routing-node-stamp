@@ -1,0 +1,6 @@
+{application, rabbitmq_acceptor_node,
+ [{description, "Stamps a message with the name of the RabbitMQ node that accepted it from the client."},
+  {vsn, ""},
+  {modules, []},
+  {registered, []},
+  {applications, [kernel, stdlib, rabbit, amqp_client]}]}.

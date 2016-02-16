@@ -1,0 +1,12 @@
+.sw?
+.*.sw?
+*.beam
+/.erlang.mk/
+/cover/
+/deps/
+/debug/
+/doc/
+/ebin/
+/logs/
+/plugins/
+/rabbitmq_message_timestamp.d
