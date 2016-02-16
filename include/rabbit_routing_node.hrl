@@ -13,5 +13,5 @@
 %% The Initial Developer of the Original Code is Pivotal Software, Inc.
 %% Copyright (c) 2007-2015 Pivotal Software, Inc.  All rights reserved.
 
--define(ACCEPTOR_NODE_HEADER, <<"x-accepted-by">>).
--define(ACCEPTOR_NODE_KEY, <<"routing-node">>).
+-define(ROUTING_NODE_HEADER, <<"x-routed-by">>).
+-define(ROUTING_NODE_KEY, <<"routing-node">>).

@@ -1,4 +1,4 @@
-{application, rabbitmq_acceptor_node,
+{application, rabbitmq_routing_node,
  [{description, "Stamps a message with the name of the RabbitMQ node that accepted it from the client."},
   {vsn, ""},
   {modules, []},
