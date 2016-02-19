@@ -1,2 +1,44 @@
-# rabbitmq-acceptor-node-plugin
+# rabbitmq-routing-node-stamp
 When a RabbitMQ broker receives a message, stamp the message with the node that accepted it.
+
+## Supported RabbitMQ Versions ##
+
+This plugin targets RabbitMQ 3.6.0 and later versions.
+
+## Installing ##
+
+Clone the repo and then build it with `make`:
+
+```
+cd rabbitmq-routing-node-stamp
+make
+# [snip]
+make dist
+# [snip]
+ls plugins/*
+```
+
+Build artefacts then can be found under the `plugins` directory.
+
+Finally copy `plugins/rabbitmq_routing_node_stamp_plugins.ez` to the `$RABBITMQ_HOME/plugins` folder.
+
+## Usage ##
+
+Just enable the plugin with the following command:
+
+```bash
+rabbitmq-plugins enable rabbitmq_routing_node_stamp
+```
+
+The plugin will then hook into the `basic.publish` process in order to
+add the current timestamp as seen by the broker.
+
+## Limitations ##
+
+The plugin hooks into the `basic.publish` path, so expect a small
+throughput reduction when using this plugin, since it has to modify
+every message that crosses RabbitMQ.
+
+## LICENSE ##
+
+See the LICENSE file
