@@ -14,11 +14,11 @@
 %% Copyright (c) 2007-2016 Pivotal Software, Inc.  All rights reserved.
 %%
 
--module(rabbit_routing_node_interceptor).
+-module(rabbit_routing_node_stamp_interceptor).
 
 -include_lib("rabbit_common/include/rabbit.hrl").
 -include_lib("rabbit_common/include/rabbit_framing.hrl").
--include_lib("rabbit_routing_node.hrl").
+-include_lib("rabbit_routing_node_stamp.hrl").
 
 -import(rabbit_basic, [extract_headers/1, header/2, prepend_table_header/3]).
 
@@ -27,13 +27,13 @@
 -export([description/0, intercept/3, applies_to/0, init/1]).
 
 -rabbit_boot_step({?MODULE,
-                   [{description, "routing node interceptor"},
+                   [{description, "routing node stamp interceptor"},
                     {mfa, {rabbit_registry, register,
                            [channel_interceptor,
-                            <<"routing node interceptor">>, ?MODULE]}},
+                            <<"routing node stamp interceptor">>, ?MODULE]}},
                     {cleanup, {rabbit_registry, unregister,
                                [channel_interceptor,
-                                <<"routing node interceptor">>]}},
+                                <<"routing node stamp interceptor">>]}},
                     {requires, rabbit_registry},
                     {enables, recovery}]}).
 

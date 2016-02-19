@@ -14,13 +14,13 @@
 %% Copyright (c) 2007-2016 Pivotal Software, Inc.  All rights reserved.
 %%
 
--module(rabbit_routing_node_test).
+-module(rabbit_routing_node_stamp_test).
 
 -export([test/0]).
 
 -include_lib("eunit/include/eunit.hrl").
 -include_lib("amqp_client/include/amqp_client.hrl").
--include_lib("rabbit_routing_node.hrl").
+-include_lib("rabbit_routing_node_stamp.hrl").
 
 -import(rabbit_basic, [header/2, prepend_table_header/3]).
 
@@ -237,7 +237,7 @@ make_msg_with_header(V,Name,Key,Value) ->
 
 
 tests(Module, Timeout) ->
-  {foreach, fun() -> ok end,
-   [{timeout, Timeout, fun () -> Module:F() end} ||
-    {F, _Arity} <- proplists:get_value(exports, Module:module_info()),
-    string:right(atom_to_list(F), 5) =:= "_test"]}.
+    {foreach, fun() -> ok end,
+     [{timeout, Timeout, fun () -> Module:F() end} ||
+       {F, _Arity} <- proplists:get_value(exports, Module:module_info()),
+       string:right(atom_to_list(F), 5) =:= "_test"]}.

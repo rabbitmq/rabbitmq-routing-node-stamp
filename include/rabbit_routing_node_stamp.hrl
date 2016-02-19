@@ -11,7 +11,8 @@
 %% The Original Code is RabbitMQ.
 %%
 %% The Initial Developer of the Original Code is Pivotal Software, Inc.
-%% Copyright (c) 2007-2015 Pivotal Software, Inc.  All rights reserved.
+%% Copyright (c) 2007-2016 Pivotal Software, Inc.  All rights reserved.
+%%
 
 -define(ROUTING_NODE_HEADER, <<"x-routed-by">>).
 -define(ROUTING_NODE_KEY, <<"routing-node">>).
