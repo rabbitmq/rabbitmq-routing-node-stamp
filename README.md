@@ -1,5 +1,6 @@
-# rabbitmq-routing-node-stamp
-When a RabbitMQ broker receives a message, stamp the message with the node that accepted it.
+# RabbitMQ Routing Node Stamp Plugin
+
+When a RabbitMQ broker receives a message, stamp the message with the node that routed it (handled client request).
 
 ## Supported RabbitMQ Versions ##
 
