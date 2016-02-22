@@ -1,4 +1,4 @@
-PROJECT = rabbitmq_acceptor_node
+PROJECT = rabbitmq_routing_node_stamp
 
 DEPS = rabbit
 TEST_DEPS = amqp_client
@@ -19,4 +19,4 @@ include erlang.mk
 # --------------------------------------------------------------------
 
 WITH_BROKER_TEST_COMMANDS := \
-	rabbit_acceptor_node_test:test()
+	rabbit_routing_node_stamp_test:test()

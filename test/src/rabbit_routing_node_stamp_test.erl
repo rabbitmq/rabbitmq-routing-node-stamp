@@ -14,20 +14,25 @@
 %% Copyright (c) 2007-2016 Pivotal Software, Inc.  All rights reserved.
 %%
 
--module(rabbit_acceptor_node_test).
+-module(rabbit_routing_node_stamp_test).
 
 -export([test/0]).
 
 -include_lib("eunit/include/eunit.hrl").
 -include_lib("amqp_client/include/amqp_client.hrl").
+-include_lib("rabbit_routing_node_stamp.hrl").
 
 -import(rabbit_basic, [header/2, prepend_table_header/3]).
+
+-define(IRRELEVANT_HEADER, <<"x-irrelevant-header">>).
+-define(IRRELEVANT_KEY, <<"irrelevant-key">>).
+-define(IRRELEVANT_VAL, <<"irrelevant-value">>).
 
 test() ->
     ok = eunit:test(tests(?MODULE, 60), [verbose]).
 
-% Verify that the message's acceptor is added as a header.
-acceptor_node_test() ->
+% Verify that the message's routing node is added as a header.
+routing_node_test() ->
     {ok, Conn} = amqp_connection:start(#amqp_params_network{}),
     {ok, Chan} = amqp_connection:open_channel(Conn),
 
@@ -46,8 +51,8 @@ acceptor_node_test() ->
 
     [begin
        ?assertNotEqual(get_headers(Msg), undefined),
-       ?assertEqual(first_header_name(Msg), <<"x-accepted-by">>),
-       ?assertEqual(accepted_by(Msg), node())
+       ?assert(header_found(?ROUTING_NODE_HEADER, Msg)),
+       ?assertEqual(routed_by(Msg), node())
      end|| Msg <- Result],
 
     amqp_channel:call(Chan, delete_queue(Q)),
@@ -55,8 +60,8 @@ acceptor_node_test() ->
 
     ok.
 
-% Verify that an existing accepted-by header is not overwritten.
-existing_acceptor_node_test() ->
+% Verify that an existing 'routed-by' header is not overwritten.
+existing_routing_node_test() ->
     {ok, Conn} = amqp_connection:start(#amqp_params_network{}),
     {ok, Chan} = amqp_connection:open_channel(Conn),
 
@@ -76,8 +81,8 @@ existing_acceptor_node_test() ->
 
     [begin
        ?assertNotEqual(get_headers(Msg), undefined),
-       ?assertEqual(first_header_name(Msg), <<"x-accepted-by">>),
-       ?assertEqual(accepted_by(Msg), seti@home)
+       ?assert(header_found(?ROUTING_NODE_HEADER, Msg)),
+       ?assertEqual(routed_by(Msg), seti@home)
      end|| Msg <- Result],
 
     amqp_channel:call(Chan, delete_queue(Q)),
@@ -85,9 +90,9 @@ existing_acceptor_node_test() ->
 
     ok.
 
-% Verify that the accepted-by operation is orthogonal to any 
+% Verify that the 'routed-by' operation is orthogonal to any 
 % othe pre-existing headers.
-acceptor_node_irrelevant_header_test() ->
+routing_node_irrelevant_header_test() ->
     {ok, Conn} = amqp_connection:start(#amqp_params_network{}),
     {ok, Chan} = amqp_connection:open_channel(Conn),
 
@@ -106,9 +111,9 @@ acceptor_node_irrelevant_header_test() ->
 
     [begin
        ?assertNotEqual(get_headers(Msg), undefined),
-       ?assertEqual(first_header_name(Msg), <<"x-accepted-by">>),
-       ?assertEqual(last_header_name(Msg), <<"x-random-header">>),
-       ?assertEqual(accepted_by(Msg), node())
+       ?assert(header_found(?ROUTING_NODE_HEADER, Msg)),
+       ?assert(header_found(?IRRELEVANT_HEADER, Msg)),
+       ?assertEqual(routed_by(Msg), node())
      end|| Msg <- Result],
 
     amqp_channel:call(Chan, delete_queue(Q)),
@@ -196,7 +201,7 @@ publish_messages(Chan, Ex, Msgs) ->
     publish(Chan, Ex, <<>>, fun make_msg/1, Msgs).
 
 publish_accepted_messages(Chan, Ex, Msgs, Nodes) ->
-  publish(Chan, Ex, <<>>, fun make_accepted_msg/1, lists:zip(Msgs, Nodes)).
+  publish(Chan, Ex, <<>>, fun make_routed_msg/1, lists:zip(Msgs, Nodes)).
 
 publish_messages_with_irrelevant_headers(Chan, Ex, Msgs) ->
   publish(Chan, Ex, <<>>, fun make_msg_with_irrelevant_header/1, Msgs).
@@ -204,26 +209,24 @@ publish_messages_with_irrelevant_headers(Chan, Ex, Msgs) ->
 
 get_headers(#amqp_msg{props = #'P_basic'{headers = Headers}}) -> Headers.
 
-first_header_name(#amqp_msg{props = #'P_basic'{headers = Headers}}) ->
-  element(1,hd(Headers)).
-
-last_header_name(#amqp_msg{props = #'P_basic'{headers = Headers}}) ->
-  element(1, hd(lists:reverse(Headers))).
-
 %TODO: Find a representation, based on the semantics of the AMQP header.
-accepted_by(#amqp_msg{props = #'P_basic'{headers = Headers}}) ->
-  list_to_atom(binary_to_list(element(3,hd(element(2,hd(element(3, header(<<"x-accepted-by">>, Headers)))))))).
+routed_by(#amqp_msg{props = #'P_basic'{headers = Headers}}) ->
+  list_to_atom(binary_to_list(element(3,hd(element(2,hd(element(3, header(?ROUTING_NODE_HEADER, Headers)))))))).
 
 
 make_msg(V) -> #amqp_msg{payload = term_to_binary(V)}.
 
-make_accepted_msg({V,N}) ->
-    make_msg_with_header(V,<<"x-accepted-by">>, <<"accepting-node">>,
-        list_to_binary(atom_to_list(N))).
+make_routed_msg({V,N}) ->
+    make_msg_with_header(V,
+                         ?ROUTING_NODE_HEADER,
+                         ?ROUTING_NODE_KEY, 
+                         list_to_binary(atom_to_list(N))).
 
 make_msg_with_irrelevant_header(V) ->
-    make_msg_with_header(V,<<"x-random-header">>, <<"random-attr">>, <<"random-key">>).
+    make_msg_with_header(V, ?IRRELEVANT_HEADER, ?IRRELEVANT_KEY, ?IRRELEVANT_VAL).
 
+header_found(<<_,_/binary>> = Target, #amqp_msg{props = #'P_basic'{headers = Headers}}) ->
+  lists:keyfind(Target, 1, Headers) /= false.
 
 make_msg_with_header(V,Name,Key,Value) ->
     NewHeaders = prepend_table_header(
@@ -236,5 +239,5 @@ make_msg_with_header(V,Name,Key,Value) ->
 tests(Module, Timeout) ->
     {foreach, fun() -> ok end,
      [{timeout, Timeout, fun () -> Module:F() end} ||
-         {F, _Arity} <- proplists:get_value(exports, Module:module_info()),
-         string:right(atom_to_list(F), 5) =:= "_test"]}.
+       {F, _Arity} <- proplists:get_value(exports, Module:module_info()),
+       string:right(atom_to_list(F), 5) =:= "_test"]}.
