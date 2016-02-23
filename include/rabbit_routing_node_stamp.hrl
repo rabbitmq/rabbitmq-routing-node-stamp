@@ -15,4 +15,3 @@
 %%
 
 -define(ROUTING_NODE_HEADER, <<"x-routed-by">>).
--define(ROUTING_NODE_KEY, <<"routing-node">>).

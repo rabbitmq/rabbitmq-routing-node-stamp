@@ -57,9 +57,6 @@ applies_to() ->
 
 %%----------------------------------------------------------------------------
 
-set_routing_node(#content{properties = #'P_basic'{headers = undefined}} = Content) ->
-  set_routing_node(Content, node());
-
 set_routing_node(#content{properties = #'P_basic'{headers = Headers}} = Content) ->
   case header(?ROUTING_NODE_HEADER, Headers) of
     undefined -> set_routing_node(Content, node());
@@ -67,13 +64,15 @@ set_routing_node(#content{properties = #'P_basic'{headers = Headers}} = Content)
   end.
 
 set_routing_node(#content{properties = #'P_basic'{headers = Headers} = Props} = Content, Node) ->
-  NewHeaders =
-  prepend_table_header(
-    ?ROUTING_NODE_HEADER,
-    [{?ROUTING_NODE_KEY, longstr, list_to_binary(atom_to_list(Node))}],
-    Headers
-   ),
+  NewHeaders = add_header(Headers, new_routing_header(Node)),
   Content#content{
     properties = Props#'P_basic'{headers = NewHeaders},
     properties_bin = none
    }.
+
+add_header(undefined, Header) -> [Header];
+add_header([{_,_,_}|_] = Headers, Header) ->
+  lists:keystore(element(1,Header), 1, Headers, Header).
+
+new_routing_header(Node) ->
+  {?ROUTING_NODE_HEADER, longstr, atom_to_binary(Node, utf8)}.
