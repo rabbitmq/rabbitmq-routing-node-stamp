@@ -195,46 +195,39 @@ make_exchange(Ex, Type) ->
        type        = Type
       }.
 
-%%% Test-Specific Helpers
+%%----------------------------------------------------------------------------
 
 publish_messages(Chan, Ex, Msgs) ->
     publish(Chan, Ex, <<>>, fun make_msg/1, Msgs).
 
 publish_accepted_messages(Chan, Ex, Msgs, Nodes) ->
-  publish(Chan, Ex, <<>>, fun make_routed_msg/1, lists:zip(Msgs, Nodes)).
+    publish(Chan, Ex, <<>>, fun make_routed_msg/1, lists:zip(Msgs, Nodes)).
 
 publish_messages_with_irrelevant_headers(Chan, Ex, Msgs) ->
-  publish(Chan, Ex, <<>>, fun make_msg_with_irrelevant_header/1, Msgs).
+    publish(Chan, Ex, <<>>, fun make_msg_with_irrelevant_header/1, Msgs).
 
 
 get_headers(#amqp_msg{props = #'P_basic'{headers = Headers}}) -> Headers.
 
-%TODO: Find a representation, based on the semantics of the AMQP header.
 routed_by(#amqp_msg{props = #'P_basic'{headers = Headers}}) ->
-  list_to_atom(binary_to_list(element(3,hd(element(2,hd(element(3, header(?ROUTING_NODE_HEADER, Headers)))))))).
+    binary_to_atom(element(3, header(?ROUTING_NODE_HEADER, Headers)), utf8).
 
 
 make_msg(V) -> #amqp_msg{payload = term_to_binary(V)}.
 
 make_routed_msg({V,N}) ->
-    make_msg_with_header(V,
-                         ?ROUTING_NODE_HEADER,
-                         ?ROUTING_NODE_KEY, 
-                         list_to_binary(atom_to_list(N))).
+    make_msg_with_header(V, ?ROUTING_NODE_HEADER, atom_to_binary(N, utf8)).
 
 make_msg_with_irrelevant_header(V) ->
-    make_msg_with_header(V, ?IRRELEVANT_HEADER, ?IRRELEVANT_KEY, ?IRRELEVANT_VAL).
+    make_msg_with_header(V, ?IRRELEVANT_HEADER, ?IRRELEVANT_VAL).
 
-header_found(<<_,_/binary>> = Target, #amqp_msg{props = #'P_basic'{headers = Headers}}) ->
-  lists:keyfind(Target, 1, Headers) /= false.
+header_found(<<_,_/binary>> = Target,
+    #amqp_msg{props = #'P_basic'{headers = Headers}}) ->
+        lists:keyfind(Target, 1, Headers) /= false.
 
-make_msg_with_header(V,Name,Key,Value) ->
-    NewHeaders = prepend_table_header(
-                  Name,
-                  [{Key, longstr, Value}],
-                  undefined),
+make_msg_with_header(V,Name,Value) ->
+    NewHeaders = [{Name, longstr, Value}],
     #amqp_msg{payload = term_to_binary(V), props = #'P_basic'{headers = NewHeaders}}.
-
 
 tests(Module, Timeout) ->
     {foreach, fun() -> ok end,
