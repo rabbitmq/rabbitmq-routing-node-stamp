@@ -71,8 +71,8 @@ set_routing_node(#content{properties = #'P_basic'{headers = Headers} = Props} = 
    }.
 
 add_header(undefined, Header) -> [Header];
-add_header([{_,_,_}|_] = Headers, Header) ->
-  lists:keystore(element(1,Header), 1, Headers, Header).
+add_header(Headers, Header) ->
+  lists:keystore(element(1, Header), 1, Headers, Header).
 
 new_routing_header(Node) ->
   {?ROUTING_NODE_HEADER, longstr, atom_to_binary(Node, utf8)}.
