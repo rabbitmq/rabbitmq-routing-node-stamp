@@ -31,8 +31,7 @@ Just enable the plugin with the following command:
 rabbitmq-plugins enable rabbitmq_routing_node_stamp
 ```
 
-The plugin will then hook into the `basic.publish` process in order to
-add the current timestamp as seen by the broker.
+The plugin will then hook into the `basic.publish` process in order to inject a header containing the name of the routing node.
 
 ## Limitations ##
 
