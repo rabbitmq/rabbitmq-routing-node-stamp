@@ -40,6 +40,8 @@ The plugin hooks into the `basic.publish` path, so expect a small
 throughput reduction when using this plugin, since it has to modify
 every message that crosses RabbitMQ.
 
-## LICENSE ##
+## Copyrgith and License ##
 
-See the LICENSE file
+(c) Pivotal Software Inc, 2007-2016.
+
+See the LICENSE file.
