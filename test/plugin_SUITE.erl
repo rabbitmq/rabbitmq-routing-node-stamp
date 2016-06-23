@@ -14,30 +14,80 @@
 %% Copyright (c) 2007-2016 Pivotal Software, Inc.  All rights reserved.
 %%
 
--module(rabbit_routing_node_stamp_test).
+-module(plugin_SUITE).
+-compile([export_all]).
 
--export([test/0]).
-
+-include_lib("common_test/include/ct.hrl").
 -include_lib("eunit/include/eunit.hrl").
 -include_lib("amqp_client/include/amqp_client.hrl").
 -include_lib("rabbit_routing_node_stamp.hrl").
 
--import(rabbit_basic, [header/2, prepend_table_header/3]).
+-import(rabbit_basic, [header/2]).
 
 -define(IRRELEVANT_HEADER, <<"x-irrelevant-header">>).
 -define(IRRELEVANT_KEY, <<"irrelevant-key">>).
 -define(IRRELEVANT_VAL, <<"irrelevant-value">>).
 
-test() ->
-    ok = eunit:test(tests(?MODULE, 60), [verbose]).
+all() ->
+    [
+      {group, non_parallel_tests}
+    ].
+
+groups() ->
+    [
+      {non_parallel_tests, [], [
+                                routing_node,
+                                existing_routing_node,
+                                routing_node_irrelevant_header
+                               ]}
+    ].
+
+
+%% -------------------------------------------------------------------
+%% Setup/teardown.
+%% -------------------------------------------------------------------
+
+init_per_suite(Config) ->
+    rabbit_ct_helpers:log_environment(),
+    Config1 = rabbit_ct_helpers:set_config(Config, [
+        {rmq_nodename_suffix, ?MODULE}
+      ]),
+    rabbit_ct_helpers:run_setup_steps(Config1,
+      rabbit_ct_broker_helpers:setup_steps() ++
+      rabbit_ct_client_helpers:setup_steps()).
+
+end_per_suite(Config) ->
+    rabbit_ct_helpers:run_teardown_steps(Config,
+      rabbit_ct_client_helpers:teardown_steps() ++
+      rabbit_ct_broker_helpers:teardown_steps()).
+
+init_per_group(_, Config) ->
+    Config.
+
+end_per_group(_, Config) ->
+    Config.
+
+init_per_testcase(Testcase, Config) ->
+    TestCaseName = rabbit_ct_helpers:config_to_testcase_name(Config, Testcase),
+    BaseName = re:replace(TestCaseName, "/", "-", [global,{return,list}]),
+    Config1 = rabbit_ct_helpers:set_config(Config, {test_resource_name, BaseName}),
+    rabbit_ct_helpers:testcase_started(Config1, Testcase).
+
+end_per_testcase(Testcase, Config) ->
+    rabbit_ct_helpers:testcase_finished(Config, Testcase).
+
+%% -------------------------------------------------------------------
+%% Testcases
+%% -------------------------------------------------------------------
 
 % Verify that the message's routing node is added as a header.
-routing_node_test() ->
-    {ok, Conn} = amqp_connection:start(#amqp_params_network{}),
-    {ok, Chan} = amqp_connection:open_channel(Conn),
+routing_node(Config) ->
+    Chan = rabbit_ct_client_helpers:open_channel(Config),
 
-    Ex = <<"e1">>,
-    Q = <<"q">>,
+    Node = rabbit_ct_broker_helpers:get_node_config(Config, 0, nodename),
+
+    Ex = make_exchange_name(Config, "1"),
+    Q = make_queue_name(Config, "1"),
 
     setup_fabric(Chan, make_exchange(Ex, <<"direct">>), make_queue(Q)),
 
@@ -52,21 +102,22 @@ routing_node_test() ->
     [begin
        ?assertNotEqual(get_headers(Msg), undefined),
        ?assert(header_found(?ROUTING_NODE_HEADER, Msg)),
-       ?assertEqual(routed_by(Msg), node())
+       ?assertEqual(routed_by(Msg), Node)
      end|| Msg <- Result],
 
     amqp_channel:call(Chan, delete_queue(Q)),
     amqp_channel:call(Chan, delete_exchange(Ex)),
 
+    rabbit_ct_client_helpers:close_channel(Chan),
+
     ok.
 
 % Verify that an existing 'routed-by' header is not overwritten.
-existing_routing_node_test() ->
-    {ok, Conn} = amqp_connection:start(#amqp_params_network{}),
-    {ok, Chan} = amqp_connection:open_channel(Conn),
+existing_routing_node(Config) ->
+    Chan = rabbit_ct_client_helpers:open_channel(Config),
 
-    Ex = <<"e1">>,
-    Q = <<"q">>,
+    Ex = make_exchange_name(Config, "1"),
+    Q = make_queue_name(Config, "1"),
 
     setup_fabric(Chan, make_exchange(Ex, <<"direct">>), make_queue(Q)),
 
@@ -88,17 +139,18 @@ existing_routing_node_test() ->
     amqp_channel:call(Chan, delete_queue(Q)),
     amqp_channel:call(Chan, delete_exchange(Ex)),
 
+    rabbit_ct_client_helpers:close_channel(Chan),
     ok.
 
 % Verify that the 'routed-by' operation is orthogonal to any 
 % othe pre-existing headers.
-routing_node_irrelevant_header_test() ->
-    {ok, Conn} = amqp_connection:start(#amqp_params_network{}),
-    {ok, Chan} = amqp_connection:open_channel(Conn),
+routing_node_irrelevant_header(Config) ->
+    Chan = rabbit_ct_client_helpers:open_channel(Config),
 
-    Ex = <<"e1">>,
-    Q = <<"q">>,
+    Ex = make_exchange_name(Config, "1"),
+    Q = make_queue_name(Config, "1"),
 
+    Node = rabbit_ct_broker_helpers:get_node_config(Config, 0, nodename),
     setup_fabric(Chan, make_exchange(Ex, <<"direct">>), make_queue(Q)),
 
     Msgs = [1],
@@ -113,12 +165,13 @@ routing_node_irrelevant_header_test() ->
        ?assertNotEqual(get_headers(Msg), undefined),
        ?assert(header_found(?ROUTING_NODE_HEADER, Msg)),
        ?assert(header_found(?IRRELEVANT_HEADER, Msg)),
-       ?assertEqual(routed_by(Msg), node())
+       ?assertEqual(routed_by(Msg), Node)
      end|| Msg <- Result],
 
     amqp_channel:call(Chan, delete_queue(Q)),
     amqp_channel:call(Chan, delete_exchange(Ex)),
 
+    rabbit_ct_client_helpers:close_channel(Chan),
     ok.
 
 
@@ -234,3 +287,11 @@ tests(Module, Timeout) ->
      [{timeout, Timeout, fun () -> Module:F() end} ||
        {F, _Arity} <- proplists:get_value(exports, Module:module_info()),
        string:right(atom_to_list(F), 5) =:= "_test"]}.
+
+make_exchange_name(Config, Suffix) ->
+    B = rabbit_ct_helpers:get_config(Config, test_resource_name),
+    erlang:list_to_binary("x-" ++ B ++ "-" ++ Suffix).
+
+make_queue_name(Config, Suffix) ->
+    B = rabbit_ct_helpers:get_config(Config, test_resource_name),
+    erlang:list_to_binary("q-" ++ B ++ "-" ++ Suffix).

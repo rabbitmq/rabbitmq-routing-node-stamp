@@ -1,7 +1,8 @@
 PROJECT = rabbitmq_routing_node_stamp
 
 DEPS = rabbit
-TEST_DEPS = amqp_client
+TEST_DEPS += rabbit amqp_client ct_helper
+dep_ct_helper = git https://github.com/extend/ct_helper.git master
 
 DEP_PLUGINS = rabbit_common/mk/rabbitmq-plugin.mk
 
@@ -12,11 +13,10 @@ ERLANG_MK_REPO = https://github.com/rabbitmq/erlang.mk.git
 ERLANG_MK_COMMIT = rabbitmq-tmp
 
 include rabbitmq-components.mk
-include erlang.mk
 
 # --------------------------------------------------------------------
 # Testing.
 # --------------------------------------------------------------------
+TEST_DEPS := $(filter-out rabbitmq_test,$(TEST_DEPS))
 
-WITH_BROKER_TEST_COMMANDS := \
-	rabbit_routing_node_stamp_test:test()
+include erlang.mk
