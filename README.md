@@ -8,6 +8,12 @@ This plugin targets RabbitMQ 3.6.0 and later versions.
 
 ## Installing ##
 
+Install the corresponding .ez files from our
+[Community Plugins page](http://www.rabbitmq.com/community-plugins.html).
+
+
+### Building from Source
+
 Clone the repo and then build it with `make`:
 
 ```
