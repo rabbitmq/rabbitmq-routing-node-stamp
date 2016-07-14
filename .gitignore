@@ -9,4 +9,4 @@
 /ebin/
 /logs/
 /plugins/
-/rabbitmq_message_timestamp.d
+/rabbitmq_routing_node_timestamp.d
