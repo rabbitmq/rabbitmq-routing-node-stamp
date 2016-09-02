@@ -1,6 +1,5 @@
 PROJECT = rabbitmq_routing_node_stamp
 
-DEPS = rabbit
 TEST_DEPS += rabbit amqp_client ct_helper
 dep_ct_helper = git https://github.com/extend/ct_helper.git master
 
