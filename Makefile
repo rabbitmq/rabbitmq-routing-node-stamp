@@ -1,4 +1,9 @@
 PROJECT = rabbitmq_routing_node_stamp
+PROJECT_DESCRIPTION = Stamps a message with the name of the RabbitMQ node that accepted it from the client
+
+define PROJECT_APP_EXTRA_KEYS
+	{broker_version_requirements, ["3.6.0", "3.7.0"]}
+endef
 
 DEPS = rabbit_common rabbit
 TEST_DEPS += ct_helper rabbitmq_ct_helpers rabbitmq_ct_client_helpers amqp_client

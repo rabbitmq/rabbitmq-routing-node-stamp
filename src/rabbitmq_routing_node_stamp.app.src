@@ -1,7 +1,0 @@
-{application, rabbitmq_routing_node_stamp,
- [{description, "Stamps a message with the name of the RabbitMQ node that accepted it from the client."},
-  {vsn, ""},
-  {modules, []},
-  {registered, []},
-  {broker_version_requirements, ["3.6.0", "3.7.0"]},
-  {applications, [kernel, stdlib, rabbit_common, rabbit]}]}.
