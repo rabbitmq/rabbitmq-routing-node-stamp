@@ -49,6 +49,6 @@ This plugin should not be enabled at the same time as any other interceptors tha
 
 ## Copyright and License ##
 
-(c) Pivotal Software Inc, 2007-2016.
+(c) Pivotal Software Inc, 2007-2017.
 
 See the LICENSE file.
