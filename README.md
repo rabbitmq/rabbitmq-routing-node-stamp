@@ -11,8 +11,11 @@ as they override the same extension point.
 
 ## Installing ##
 
-Binary builds of this plugin can be obtained from the
-[Community Plugins page](http://www.rabbitmq.com/community-plugins.html).
+Binary builds of this plugin can be obtained from
+the [Community Plugins page](http://www.rabbitmq.com/community-plugins.html).
+
+See [Plugin Installation](http://www.rabbitmq.com/installing-plugins.html) for details
+about how to install plugins that do not ship with RabbitMQ.
 
 
 ### Building from Source
