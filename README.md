@@ -6,6 +6,9 @@ When a RabbitMQ broker receives a message, stamp the message with the node that 
 
 This plugin targets RabbitMQ 3.6.0 and later versions.
 
+This plugin cannot be used together with [rabbitmq-routing-node-timestamp](https://github.com/rabbitmq/rabbitmq-routing-node-stamp)
+as they override the same extension point.
+
 ## Installing ##
 
 Binary builds of this plugin from
