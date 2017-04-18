@@ -11,7 +11,7 @@ This plugin targets RabbitMQ 3.6.0 and later versions.
 This plugin cannot be used together with [rabbitmq-message-timestamp](https://github.com/rabbitmq/rabbitmq-message-timestamp)
 as they override the same extension point.
 
-## Installing ##
+## Installation
 
 Binary builds of this plugin can be obtained from
 the [Community Plugins page](http://www.rabbitmq.com/community-plugins.html).
