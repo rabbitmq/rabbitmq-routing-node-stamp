@@ -57,6 +57,6 @@ This plugin should not be enabled at the same time as any other interceptors tha
 
 ## Copyright and License ##
 
-(c) Pivotal Software Inc, 2007-2020.
+(c) 2007-2020 VMware, Inc. or its affiliates.
 
 See the LICENSE file.
