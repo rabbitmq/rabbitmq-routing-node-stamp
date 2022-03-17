@@ -11,6 +11,10 @@
     ```
 * Build release `.ez`:
     ```
+    # Ensure Erlang and Elixir versions correspond with _minimum_ supported
+    # for the RabbitMQ release version
+    asdf local erlang 23.2
+    asdf local elixir 1.11.4-otp-23
     make PROJECT_VERSION='1.0.0' DIST_AS_EZS=1 FULL=1 dist
 
     # If build metadata is necessary
