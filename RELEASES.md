@@ -8,6 +8,8 @@
 
     # If build metadata is necessary
     git tag -a -s -u B1B82CC0CF84BA70147EBD05D99DE30E43EAE440 -m 'rabbitmq-routing-node-stamp v1.0.0+rmq-39' 'v1.0.0+rmq-39'
+    
+    git push --tags
     ```
 * Build release `.ez`:
     ```
