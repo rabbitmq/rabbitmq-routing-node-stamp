@@ -3,7 +3,7 @@ PROJECT_DESCRIPTION = Stamps a message with the name of the RabbitMQ node that a
 RABBITMQ_VERSION ?= v3.10.x
 
 define PROJECT_APP_EXTRA_KEYS
-	{broker_version_requirements, ["3.10.x"]}
+	{broker_version_requirements, ["3.10.0"]}
 endef
 
 LOCAL_DEPS = inets
