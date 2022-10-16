@@ -1,9 +1,9 @@
 PROJECT = rabbitmq_routing_node_stamp
 PROJECT_DESCRIPTION = Stamps a message with the name of the RabbitMQ node that accepted it from the client
-RABBITMQ_VERSION ?= v3.10.x
+RABBITMQ_VERSION ?= v3.11.x
 
 define PROJECT_APP_EXTRA_KEYS
-	{broker_version_requirements, ["3.10.x"]}
+	{broker_version_requirements, ["3.11.0"]}
 endef
 
 LOCAL_DEPS = inets
