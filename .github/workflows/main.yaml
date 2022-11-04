@@ -10,21 +10,13 @@ on:
 
 jobs:
   CI:
-    name: Build and test on Erlang/OTP ${{ matrix.otp-version }}
+    name: Build and test on Erlang/OTP
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: true
-      matrix:
-        otp-version: [23, 24, 25]
-    env:
-      LATEST_ERLANG_OTP: 25
     steps:
       - uses: actions/checkout@v3
       - uses: erlef/setup-beam@v1
         with:
-          otp-version: ${{matrix.otp-version}}
-          elixir-version: '1.13'
-      - name: Compile
-        run: make
-      - name: Test
-        run: make tests
+          otp-version: 25
+          elixir-version: '1.14'
+      - run: make
+      - run: make tests
