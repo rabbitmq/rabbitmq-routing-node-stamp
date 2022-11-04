@@ -1,6 +1,6 @@
 # RabbitMQ Routing Node Stamp Plugin
 
-[![Build Status](https://github.com/rabbtitmq/rabbitmq-routing-node-stamp/actions/workflows/main.yaml/badge.svg?branch=master)](https://github.com/rabbitmq/rabbitmq-routing-node-stamp/actions)
+[![Build Status](https://github.com/rabbitmq/rabbitmq-routing-node-stamp/actions/workflows/main.yaml/badge.svg)](https://github.com/rabbitmq/rabbitmq-routing-node-stamp/actions/workflows/main.yaml)
 
 When a RabbitMQ broker receives a message, stamp the message with the node that routed it (handled client request).
 
