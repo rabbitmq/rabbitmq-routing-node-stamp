@@ -4,9 +4,18 @@
 
 When a RabbitMQ broker receives a message, stamp the message with the node that routed it (handled client request).
 
-## Supported RabbitMQ and Erlang Versions ##
+## Supported RabbitMQ Versions ##
 
-This plugin currently targets RabbitMQ 3.8.x and Erlang 21.3+. Please see the [Releases](https://github.com/rabbitmq/rabbitmq-routing-node-stamp/releases) page for binary downloads.
+This plugin targets RabbitMQ 3.8 until 3.11.
+
+Please see the [Releases](https://github.com/rabbitmq/rabbitmq-routing-node-stamp/releases) page for binary downloads.
+
+:warning: Starting in RabbitMQ 3.12, this plugin is **deprecated** :warning:
+
+In RabbitMQ 3.12 and later versions, instead of using this plugin, use the following `rabbitmq.conf` snippet:
+```ini
+message_interceptors.incoming.set_header_routing_node.overwrite = false
+```
 
 ## Binary Builds
 
